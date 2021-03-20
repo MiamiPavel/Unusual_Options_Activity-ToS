@@ -112,7 +112,8 @@ import csv
 # time.sleep(1)
 # send_keys('{VK_RETURN}')
 
-save_path = "D:\\Trash\\unusual_options_output.csv"
+#save_path = "D:\\Trash\\unusual_options_output.csv"
+save_path = "unusual_options_output.csv"
 
 # Skip first 5 filler rows in CSV file
 df = pd.read_csv(save_path, skiprows=5)
