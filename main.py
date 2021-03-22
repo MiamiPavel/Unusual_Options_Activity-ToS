@@ -1,13 +1,5 @@
 #pywinauto manual, https://readthedocs.org/projects/airelil-pywinauto/downloads/pdf/latest/
 
-# working test
-# app = Application().start("notepad.exe")
-#
-# app.UntitledNotepad.menu_select("Help->About Notepad")
-# app.AboutNotepad.OK.click()
-# app.UntitledNotepad.Edit.type_keys("pywinauto Works!", with_spaces = True)
-
-
 import pywinauto
 import subprocess
 import time
@@ -15,6 +7,7 @@ import time
 #from pywinauto.keyboard import send_keys
 #from pywinauto import backend
 #from pywinauto import Desktop, Application, mouse, findwindows #REMOVE Hashtag when on Windows
+import openpyxl
 import pandas as pd
 import numpy as np
 import datetime
@@ -113,7 +106,7 @@ import csv
 # time.sleep(1)
 # send_keys('{VK_RETURN}')
 
-#save_path = "D:\\Trash\\unusual_options_output.csv"
+
 save_path = "unusual_options_output.csv"
 
 # Skip first 5 filler rows in CSV file
@@ -127,7 +120,7 @@ print(ticker_list)
 #print(type(ticker_list))
 
 appended_data = []
-options = []
+options_df = []
 # --------- End section download from ToS -------------
 for each_ticker in ticker_list:
     try:
@@ -138,11 +131,13 @@ for each_ticker in ticker_list:
         df_all_expirations_list = pd.DataFrame(data=expirations, columns=['allExpirationDatesList'])
         # Make expiration dates into a list so that we can use it to loop
         df_all_expirations_list = df_all_expirations_list['allExpirationDatesList'].tolist()
+        print("OuterLoop Checkpoint A")
         #print(df_all_expirations_list) #to see all expirations
         #add loop here to get each expirations options
         for specificExpirationDay in df_all_expirations_list:
             data = tk.option_chain(specificExpirationDay)
             #data is a bunch of dataframes. Just going to focus on df[0] for now.
+            print("InnerLoop Checkpoint 1")
             df = data[0]
             slicepoint = []
             tickerLength = len(each_ticker)
@@ -158,42 +153,65 @@ for each_ticker in ticker_list:
                 slicepoint = slice(5, 11)
             elif tickerLength == 6:
                 slicepoint = slice(6, 12)
+            print("InnerLoop Checkpoint 2")
             print('Current ticker processing:')
             print(each_ticker)
             # Split the first column to get out date
             expirationDate = df["contractSymbol"].str[slicepoint]
             # Add column to dataframe
             df['expirationDate'] = expirationDate
+            print("InnerLoop Checkpoint 3")
             # Change column formatting to date
             df['expirationDate'] = pd.to_datetime(df['expirationDate'], format='%y%m%d')
             # store DataFrame in list
             appended_data.append(df)
+            print("InnerLoop Checkpoint 4")
             #print("appended_data.append(df):")
             #print(type(appended_data))
             #print(appended_data)
         # see pd.concat documentation for more info
         # pd.concat turns that list of dataframes into a single dataframe
-        options = pd.concat(appended_data)
+        options_df = pd.concat(appended_data)
+        print("OuterLoop Checkpoint B")
         #print("big_dataframe_one_ticker:") # remove hashtag if need to test
         #print(type(big_dataframe_one_ticker))
         #print(big_dataframe_one_ticker)
     except:
-        break
+        print("ERROR: Exception")
+        pass
 
 # Drop unnecessary and meaningless columns
-options = options.drop(
+options_df = options_df.drop(
          columns=['contractSize', 'currency'])
 
 # Multiply Filled Price by Volume
-options['dollarsTradedTodayApprox'] = options['strike'] * options['volume']
+options_df['dollarsTradedTodayApprox'] = options_df['strike'] * options_df['volume']
 #options['dollarsTradedTodayApprox'].style.format('${0:,.0f}')
 
-options['dollarsTradedTodayApprox'] = options['dollarsTradedTodayApprox'].map('${:,.2f}'.format)
 
-print(options.dtypes)
+# Format column 'dollarsTradedTodayApprox' as a currency
+options_df['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].map('${:,.2f}'.format)
+
+# Remove NaN values
+options_df['volume'].replace('', np.nan, inplace=True) # replace empty with Nan
+options_df.dropna(subset=['volume'], inplace=True) # drop rows that have no volume
+
+# Sort Column Descending
+options_df.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
+
+# format contractSymbol column to be able to paste in ThinkOrSwim
+options_df['contractSymbol'] = options_df['contractSymbol'].str.replace('000','') # replace 3 zeros in 2 different places
+options_df['contractSymbol'] = options_df['contractSymbol'].str.replace('C00','C') # another small fix replacement
+options_df['contractSymbol'] = '.' + options_df['contractSymbol'].astype(str) # Add '.' as prefix
 
 print("Options:")
-print(options)
+print(options_df)
+
+# Export To Excel File with number formatting of 'dollarsTradedTodayApprox'
+#options_df.to_excel(r'FinalOutput.xlsx', index = False)
+writer = pd.ExcelWriter('FinalOutput.xlsx',
+                        engine='xlsxwriter',
+                        options={'strings_to_numbers': True})
 
 # pulled from a medium article, https://medium.com/@txlian13/webscrapping-options-data-with-python-and-yfinance-e4deb0124613
 #############################################################
