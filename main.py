@@ -7,13 +7,14 @@
 # app.AboutNotepad.OK.click()
 # app.UntitledNotepad.Edit.type_keys("pywinauto Works!", with_spaces = True)
 
-from pywinauto import Desktop, Application, mouse, findwindows
+
 import pywinauto
 import subprocess
 import time
-from pywinauto.controls.uiawrapper import UIAWrapper
-from pywinauto.keyboard import send_keys
-from pywinauto import backend
+#from pywinauto.controls.uiawrapper import UIAWrapper
+#from pywinauto.keyboard import send_keys
+#from pywinauto import backend
+#from pywinauto import Desktop, Application, mouse, findwindows #REMOVE Hashtag when on Windows
 import pandas as pd
 import numpy as np
 import datetime
@@ -122,7 +123,11 @@ df = pd.read_csv(save_path, skiprows=5)
 ticker_list = df['Symbol'].tolist()
 sorted(set(ticker_list)) #alphabetize and remove duplicates
 print(ticker_list)
+#print("ticker_list type:")
+#print(type(ticker_list))
 
+appended_data = []
+options = []
 # --------- End section download from ToS -------------
 for each_ticker in ticker_list:
     try:
@@ -135,7 +140,6 @@ for each_ticker in ticker_list:
         df_all_expirations_list = df_all_expirations_list['allExpirationDatesList'].tolist()
         #print(df_all_expirations_list) #to see all expirations
         #add loop here to get each expirations options
-        appended_data = []
         for specificExpirationDay in df_all_expirations_list:
             data = tk.option_chain(specificExpirationDay)
             #data is a bunch of dataframes. Just going to focus on df[0] for now.
@@ -150,6 +154,10 @@ for each_ticker in ticker_list:
                 slicepoint = slice(3, 9)
             elif tickerLength == 4:
                 slicepoint = slice(4, 10)
+            elif tickerLength == 5:
+                slicepoint = slice(5, 11)
+            elif tickerLength == 6:
+                slicepoint = slice(6, 12)
             print('Current ticker processing:')
             print(each_ticker)
             # Split the first column to get out date
@@ -160,15 +168,32 @@ for each_ticker in ticker_list:
             df['expirationDate'] = pd.to_datetime(df['expirationDate'], format='%y%m%d')
             # store DataFrame in list
             appended_data.append(df)
+            #print("appended_data.append(df):")
+            #print(type(appended_data))
+            #print(appended_data)
         # see pd.concat documentation for more info
         # pd.concat turns that list of dataframes into a single dataframe
-        big_dataframe_one_ticker = pd.concat(appended_data)
+        options = pd.concat(appended_data)
+        #print("big_dataframe_one_ticker:") # remove hashtag if need to test
+        #print(type(big_dataframe_one_ticker))
+        #print(big_dataframe_one_ticker)
     except:
-        pass
-big_dataframe_all_tickers = pd.concat(big_dataframe_one_ticker)
+        break
 
-print(big_dataframe_all_tickers)
+# Drop unnecessary and meaningless columns
+options = options.drop(
+         columns=['contractSize', 'currency'])
 
+# Multiply Filled Price by Volume
+options['dollarsTradedTodayApprox'] = options['strike'] * options['volume']
+#options['dollarsTradedTodayApprox'].style.format('${0:,.0f}')
+
+options['dollarsTradedTodayApprox'] = options['dollarsTradedTodayApprox'].map('${:,.2f}'.format)
+
+print(options.dtypes)
+
+print("Options:")
+print(options)
 
 # pulled from a medium article, https://medium.com/@txlian13/webscrapping-options-data-with-python-and-yfinance-e4deb0124613
 #############################################################
@@ -204,9 +229,7 @@ print(big_dataframe_all_tickers)
 #     options[['bid', 'ask', 'strike']] = options[['bid', 'ask', 'strike']].apply(pd.to_numeric)
 #     options['mark'] = (options['bid'] + options['ask']) / 2  # Calculate the midpoint of the bid-ask
 #
-#     # Drop unnecessary and meaningless columns
-#     options = options.drop(
-#         columns=['contractSize', 'currency', 'change', 'percentChange', 'lastTradeDate', 'lastPrice'])
+#
 #
 #     return options
 #
