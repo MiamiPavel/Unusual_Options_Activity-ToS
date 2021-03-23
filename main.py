@@ -110,7 +110,7 @@ import csv
 save_path = "unusual_options_output.csv"
 
 # Skip first 5 filler rows in CSV file
-df = pd.read_csv(save_path, skiprows=5)
+df = pd.read_csv(save_path, skiprows=5) #Headers are on row 6.
 
 #print(df)
 ticker_list = df['Symbol'].tolist()
@@ -159,6 +159,7 @@ for each_ticker in ticker_list:
             # Split the first column to get out date
             expirationDate = df["contractSymbol"].str[slicepoint]
             # Add column to dataframe
+            df['Ticker'] = each_ticker
             df['expirationDate'] = expirationDate
             print("InnerLoop Checkpoint 3")
             # Change column formatting to date
@@ -186,11 +187,7 @@ options_df = options_df.drop(
 
 # Multiply Filled Price by Volume
 options_df['dollarsTradedTodayApprox'] = options_df['strike'] * options_df['volume']
-#options['dollarsTradedTodayApprox'].style.format('${0:,.0f}')
-
-
-# Format column 'dollarsTradedTodayApprox' as a currency
-options_df['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].map('${:,.2f}'.format)
+options_df['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].astype(float)
 
 # Remove NaN values
 options_df['volume'].replace('', np.nan, inplace=True) # replace empty with Nan
@@ -199,6 +196,18 @@ options_df.dropna(subset=['volume'], inplace=True) # drop rows that have no volu
 # Sort Column Descending
 options_df.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
 
+# Format column 'dollarsTradedTodayApprox' as a currency string with no decimal
+options_df['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].apply('${:.0f}'.format)
+
+# To have second export as pivot table.
+options_df_byTicker = pd.pivot_table(options_df, values='dollarsTradedTodayApprox', index=['Ticker'], aggfunc=np.sum)
+
+# Sort Column Descending
+options_df_byTicker.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
+
+# Format column 'dollarsTradedTodayApprox' as a currency string with no decimal
+options_df_byTicker['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].apply('${:.0f}'.format)
+
 # format contractSymbol column to be able to paste in ThinkOrSwim
 options_df['contractSymbol'] = options_df['contractSymbol'].str.replace('000','') # replace 3 zeros in 2 different places
 options_df['contractSymbol'] = options_df['contractSymbol'].str.replace('C00','C') # another small fix replacement
@@ -206,12 +215,19 @@ options_df['contractSymbol'] = '.' + options_df['contractSymbol'].astype(str) # 
 
 print("Options:")
 print(options_df)
+print(options_df_byTicker)
 
 # Export To Excel File with number formatting of 'dollarsTradedTodayApprox'
-#options_df.to_excel(r'FinalOutput.xlsx', index = False)
-writer = pd.ExcelWriter('FinalOutput.xlsx',
-                        engine='xlsxwriter',
-                        options={'strings_to_numbers': True})
+options_df.to_excel(r'FinalOutput-By_Options_Contract.xlsx', index = False)
+writer = pd.ExcelWriter('FinalOutput-By_contract.xlsx',
+                       engine='xlsxwriter',
+                       options={'strings_to_numbers': True})
+
+options_df_byTicker.to_excel(r'FinalOutput-By_Ticker.xlsx')
+writer = pd.ExcelWriter('FinalOutput-By_Ticker.xlsx',
+                       engine='xlsxwriter',
+                       options={'strings_to_numbers': True})
+
 
 # pulled from a medium article, https://medium.com/@txlian13/webscrapping-options-data-with-python-and-yfinance-e4deb0124613
 #############################################################
