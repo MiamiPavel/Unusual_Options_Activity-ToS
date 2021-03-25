@@ -174,7 +174,7 @@ for each_ticker in ticker_list:
         # pd.concat turns that list of dataframes into a single dataframe
         options_df = pd.concat(appended_data)
         print("OuterLoop Checkpoint B")
-        #print("big_dataframe_one_ticker:") # remove hashtag if need to test
+        #print("big_dataframe_one_ticker:") # remove hashtag if need to Git_Gmail_Module
         #print(type(big_dataframe_one_ticker))
         #print(big_dataframe_one_ticker)
     except:
@@ -200,13 +200,18 @@ options_df.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=
 options_df['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].apply('${:.0f}'.format)
 
 # To have second export as pivot table.
-options_df_byTicker = pd.pivot_table(options_df, values='dollarsTradedTodayApprox', index=['Ticker'], aggfunc=np.sum)
+#options_df_byTicker = pd.pivot_table(options_df, values='dollarsTradedTodayApprox', index=['Ticker',  aggfunc=np.sum)
 
 # Sort Column Descending
-options_df_byTicker.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
+#options_df_byTicker.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
+options_df_byTicker = pd.pivot_table(options_df,index=['Ticker','contractSymbol'],values=['dollarsTradedTodayApprox'],aggfunc=np.sum)
 
+
+### This block was giving error
 # Format column 'dollarsTradedTodayApprox' as a currency string with no decimal
-options_df_byTicker['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].apply('${:.0f}'.format)
+#options_df_byTicker['dollarsTradedTodayApprox'] = options_df_byTicker['dollarsTradedTodayApprox'].astype(float) #convert to float
+#options_df_byTicker['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].apply('${:.0f}'.format) #add $ sign
+###
 
 # format contractSymbol column to be able to paste in ThinkOrSwim
 options_df['contractSymbol'] = options_df['contractSymbol'].str.replace('000','') # replace 3 zeros in 2 different places
