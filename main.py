@@ -110,7 +110,7 @@ import csv
 save_path = "unusual_options_output.csv"
 
 # Skip first 5 filler rows in CSV file
-df = pd.read_csv(save_path, skiprows=5) #Headers are on row 6.
+df = pd.read_csv(save_path, skiprows=3) #Headers are on row 6.
 
 #print(df)
 ticker_list = df['Symbol'].tolist()

@@ -1,11 +1,23 @@
 # import the required libraries
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+import os
 import pickle
 import os.path
 import base64
 import email
+# Gmail API utils
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+# for encoding/decoding messages in base64
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+# for dealing with attachment MIME types
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from mimetypes import guess_type as guess_mime_type
 from bs4 import BeautifulSoup
 
 # Define the SCOPES. If modifying it, delete the token.pickle file.
@@ -41,8 +53,6 @@ def getEmails():
 
 	# request a list of all the messages
 	result = service.users().messages().list(userId='me').execute()
-
-	alerts @ thinkorswim.com
 
 	# We can also pass maxResults to get any number of emails. Like this:
 	# result = service.users().messages().list(maxResults=200, userId='me').execute()
@@ -89,4 +99,4 @@ def getEmails():
 			pass
 
 
-getEmails()
+# Used these instructions for parsing and sending https://www.thepythoncode.com/article/use-gmail-api-in-python
