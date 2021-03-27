@@ -1,18 +1,12 @@
 #pywinauto manual, https://readthedocs.org/projects/airelil-pywinauto/downloads/pdf/latest/
 
-import pywinauto
-import subprocess
-import time
 #from pywinauto.controls.uiawrapper import UIAWrapper
 #from pywinauto.keyboard import send_keys
 #from pywinauto import backend
 #from pywinauto import Desktop, Application, mouse, findwindows #REMOVE Hashtag when on Windows
-import openpyxl
 import pandas as pd
 import numpy as np
-import datetime
 import yfinance as yf
-import csv
 
 # # ------ Section: Download CSV from ToS ------------------
 #
