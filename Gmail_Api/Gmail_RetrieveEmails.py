@@ -2,16 +2,17 @@
 # https://www.youtube.com/watch?v=vgk7Yio-GQw
 import pickle
 import os.path
-from apiclient import errors
+from googleapiclient import errors
 import email
 from email.mime.text import MIMEText
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 import base64
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://mail.google.com/']
 
 # Authentication with google part
 def get_service():
@@ -30,25 +31,32 @@ def get_service():
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('../token.pickle'):
-        print('token.pickle exists')
-        with open('../token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            print('Credentials expired, refreshing token')
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
-
         # Save the credentials for the next run
-        with open('../token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
 
     service = build('gmail', 'v1', credentials=creds)
+
+    # Call the Gmail API
+    results = service.users().labels().list(userId='me').execute()
+    labels = results.get('labels', [])
+
+    if not labels:
+        print('No labels found.')
+    else:
+        #print('Labels:')
+        for label in labels:
+            print(label['name'])
 
     return service
 
@@ -180,8 +188,8 @@ tickers_text = tickers_text.splitlines()
 tickers_text = ''.join(tickers_text)
 
 ticker_list = tickers_text.split(",")
-print("Ticker List:")
-print(ticker_list)
+#print("Ticker List:")
+#print(ticker_list)
 
 
 

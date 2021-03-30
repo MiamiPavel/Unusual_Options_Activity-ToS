@@ -7,7 +7,13 @@
 import pandas as pd
 import numpy as np
 import yfinance as yf
+from Gmail_Api.Gmail_RetrieveEmails import *
+import yagmail #use this to send email out. It is 1000 times easier than native gmail solution
 
+print(ticker_list)
+
+############### Original way I was doing it was with mouse gestures on ThinkOrSwim search.
+#### I then moved to doing it using email alerts.
 # # ------ Section: Download CSV from ToS ------------------
 #
 # app = Application(backend='uia').start(r"C:\Program Files\thinkorswim\thinkorswim.exe")
@@ -100,15 +106,26 @@ import yfinance as yf
 # time.sleep(1)
 # send_keys('{VK_RETURN}')
 
-
-save_path = "unusual_options_output.csv"
+# use for testing
+#save_path = "unusual_options_output.csv"
 
 # Skip first 5 filler rows in CSV file
-df = pd.read_csv(save_path, skiprows=3) #Headers are on row 6.
+#df = pd.read_csv(save_path, skiprows=3) #Headers are on row 6.
 
 #print(df)
-ticker_list = df['Symbol'].tolist()
-sorted(set(ticker_list)) #alphabetize and remove duplicates
+#ticker_list = df['Symbol'].tolist()
+# ^ use for testing
+
+
+sorted(set(ticker_list)) #alphabetize list
+
+deduped_ticker_list = []
+for i in ticker_list: #remove duplicates from list
+    if i not in deduped_ticker_list:
+        deduped_ticker_list.append(i)
+
+ticker_list = deduped_ticker_list
+
 print(ticker_list)
 #print("ticker_list type:")
 #print(type(ticker_list))
@@ -190,16 +207,17 @@ options_df.dropna(subset=['volume'], inplace=True) # drop rows that have no volu
 # Sort Column Descending
 options_df.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
 
-# Format column 'dollarsTradedTodayApprox' as a currency string with no decimal
-options_df['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].apply('${:.0f}'.format)
-
 # To have second export as pivot table.
 #options_df_byTicker = pd.pivot_table(options_df, values='dollarsTradedTodayApprox', index=['Ticker',  aggfunc=np.sum)
 
-# Sort Column Descending
+# Make as pivot and sort descending
 #options_df_byTicker.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
-options_df_byTicker = pd.pivot_table(options_df,index=['Ticker','contractSymbol'],values=['dollarsTradedTodayApprox'],aggfunc=np.sum)
+options_df_byTicker = pd.pivot_table(options_df,index=['Ticker'],values=['dollarsTradedTodayApprox'],aggfunc=np.sum)
+options_df_byTicker.sort_values(by=['dollarsTradedTodayApprox'], inplace=True, ascending=False)
 
+# Format column 'dollarsTradedTodayApprox' as a currency string with no decimal
+options_df['dollarsTradedTodayApprox'] = options_df['dollarsTradedTodayApprox'].apply('${:,}'.format)
+options_df_byTicker['dollarsTradedTodayApprox'] = options_df_byTicker['dollarsTradedTodayApprox'].apply('${:,}'.format)
 
 ### This block was giving error
 # Format column 'dollarsTradedTodayApprox' as a currency string with no decimal
@@ -269,3 +287,28 @@ writer = pd.ExcelWriter('FinalOutput-By_Ticker.xlsx',
 # #options_chain(ticker_list)
 # print(options_chain("WLTW" "ADCT"))
 ############################################################
+
+# Send two emails. I couldn't send one with both.
+# Send email functionality
+receiver = "plitv001+stock@gmail.com"
+subject = "Unusual Stock Options Activity for Today - By Contract"
+body = options_df
+
+yag = yagmail.SMTP("plitv001@gmail.com","origivxvqatmkkzc")
+yag.send(
+    to=receiver,
+    subject= subject,
+    contents=body)
+print("Email Sent")
+
+# Send email functionality
+receiver = "plitv001+stock@gmail.com"
+subject = "Unusual Stock Options Activity for Today - By Ticker"
+body = options_df_byTicker
+
+yag = yagmail.SMTP("plitv001@gmail.com","origivxvqatmkkzc")
+yag.send(
+    to=receiver,
+    subject= subject,
+    contents=body)
+print("Email Sent")

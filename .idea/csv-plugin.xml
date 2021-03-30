@@ -59,6 +59,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Gmail_Api\Gmail_RetrieveEmails.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\email_reader.py">
           <value>
             <Attribute>
@@ -74,6 +81,13 @@
           </value>
         </entry>
         <entry key="\quickstart.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\requirements.txt">
           <value>
             <Attribute>
               <option name="separator" value=":" />
