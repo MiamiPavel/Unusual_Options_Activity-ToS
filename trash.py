@@ -1,13 +1,20 @@
-# pip install –upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+import yagmail
+from datetime import datetime
 
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import pickle
-import os.path
-import base64
-import email
-from bs4 import BeautifulSoup
+today = datetime.now().strftime("%Y-%m-%d")
+subject_wip = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
+
+#print(subject_wip)
 
 
+# Send email functionality
+receiver = "plitv001+stock@gmail.com"
+subject = subject_wip
+body = "test"
 
+yag = yagmail.SMTP("plitv001@gmail.com","origivxvqatmkkzc")
+yag.send(
+    to=receiver,
+    subject= subject,
+    contents=body)
+print("Email Sent")

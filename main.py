@@ -9,6 +9,7 @@ import numpy as np
 import yfinance as yf
 from Gmail_Api.Gmail_RetrieveEmails import *
 import yagmail #use this to send email out. It is 1000 times easier than native gmail solution
+from datetime import datetime
 
 print(ticker_list)
 
@@ -288,10 +289,13 @@ writer = pd.ExcelWriter('FinalOutput-By_Ticker.xlsx',
 # print(options_chain("WLTW" "ADCT"))
 ############################################################
 
+# Format todays date for insertion in emails
+today = datetime.now().strftime("%Y-%m-%d")
+
 # Send two emails. I couldn't send one with both.
 # Send email functionality
 receiver = "plitv001+stock@gmail.com"
-subject = "Unusual Stock Options Activity for Today - By Contract"
+subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
 body = options_df
 
 yag = yagmail.SMTP("plitv001@gmail.com","origivxvqatmkkzc")
@@ -303,7 +307,7 @@ print("Email Sent")
 
 # Send email functionality
 receiver = "plitv001+stock@gmail.com"
-subject = "Unusual Stock Options Activity for Today - By Ticker"
+subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
 body = options_df_byTicker
 
 yag = yagmail.SMTP("plitv001@gmail.com","origivxvqatmkkzc")
