@@ -205,14 +205,14 @@ today = datetime.now().strftime("%Y-%m-%d")
 yag = yagmail.SMTP("plitv001@gmail.com",gmailpass)
 receiver = ["plitv001+stock@gmail.com","honnoratgabriel@gmail.com","rxjoshua@gmail.com","vp2345@gmail.com"]
 
-for x in receiver: #loop to send to all in the receiver list
+for x in range(len(receiver)): #loop to send to all in the receiver list
     subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
     body = options_df
     yag.send(
         to=receiver[x],
         subject=subject,
         contents=body)
-    print("Email Sent")
+    print(f"Email Sent receiver[x]")
 
     # Send email functionality
     subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
@@ -221,4 +221,4 @@ for x in receiver: #loop to send to all in the receiver list
         to=receiver[x],
         subject=subject,
         contents=body)
-    print("Email Sent")
+    print(f"Email Sent receiver[x]")
