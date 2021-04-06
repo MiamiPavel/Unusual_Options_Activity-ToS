@@ -1,15 +1,10 @@
-#pywinauto manual, https://readthedocs.org/projects/airelil-pywinauto/downloads/pdf/latest/
-
-#from pywinauto.controls.uiawrapper import UIAWrapper
-#from pywinauto.keyboard import send_keys
-#from pywinauto import backend
-#from pywinauto import Desktop, Application, mouse, findwindows #REMOVE Hashtag when on Windows
 import pandas as pd
 import numpy as np
 import yfinance as yf
 from Gmail_Api.Gmail_RetrieveEmails import *
 import yagmail #use this to send email out. It is 1000 times easier than native gmail solution
-from datetime import datetime
+from datetime import datetime, date, timedelta
+import pandas_market_calendars as mcal
 from config import * #passwords and api info should live here and be .gitignore listed
 
 print(ticker_list)
@@ -199,26 +194,34 @@ writer = pd.ExcelWriter('FinalOutput-By_Ticker.xlsx',
 # Format todays date for insertion in emails
 today = datetime.now().strftime("%Y-%m-%d")
 
-# Send two emails. I couldn't send one with both.
-# Send email functionality
+# Don't send emails on days that are not business days.
+# (holidays, it will still send email even though exchange is closed)
+def is_business_day(date):
+    return bool(len(pd.bdate_range(date, date)))
+print(f"Is today a business days: is_business_day(today)")
 
-yag = yagmail.SMTP("plitv001@gmail.com",gmailpass)
-receiver = ["plitv001+stock@gmail.com","honnoratgabriel@gmail.com","rxjoshua@gmail.com","vp2345@gmail.com"]
 
-for x in range(len(receiver)): #loop to send to all in the receiver list
-    subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
-    body = options_df
-    yag.send(
-        to=receiver[x],
-        subject=subject,
-        contents=body)
-    print(f"Email Sent receiver[x]")
-
+if is_business_day(today) == True: #only sends on business days
+    # Send two emails. I couldn't send one with both.
     # Send email functionality
-    subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
-    body = options_df_byTicker
-    yag.send(
-        to=receiver[x],
-        subject=subject,
-        contents=body)
-    print(f"Email Sent receiver[x]")
+
+    yag = yagmail.SMTP("plitv001@gmail.com",gmailpass)
+    receiver = ["plitv001+stock@gmail.com","honnoratgabriel@gmail.com","rxjoshua@gmail.com","vp2345@gmail.com","surfergrayhawaii@yahoo.com"]
+
+    for x in range(len(receiver)): #loop to send to all in the receiver list
+        subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
+        body = options_df
+        yag.send(
+            to=receiver[x],
+            subject=subject,
+            contents=body)
+        print(f"Email Sent receiver[x]")
+
+        # Send email functionality
+        subject = str(today) + " Unusual Stock Options Activity for Today - By Ticker"
+        body = options_df_byTicker
+        yag.send(
+            to=receiver[x],
+            subject=subject,
+            contents=body)
+        print(f"Email Sent receiver[x]")
