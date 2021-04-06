@@ -29,9 +29,6 @@ jxmlease==1.0.3
 kiwisolver==1.1.0
 lxml==4.6.2
 MarkupSafe==1.1.1
-matplotlib==3.1.1
-mkl-fft==1.0.15
-mkl-random==1.1.0
 mkl-service==2.3.0
 multitasking==0.0.9
 numpy==1.17.4
@@ -40,7 +37,6 @@ openpyxl==3.0.3
 pandas==1.0.1
 pandas-datareader==0.8.1
 pandas-profiling==1.4.1
-pandas-ta==0.2.45b0
 parsel==1.6.0
 prettytable==2.1.0
 Protego==0.1.16
